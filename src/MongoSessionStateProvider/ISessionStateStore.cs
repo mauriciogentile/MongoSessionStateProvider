@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MongoSessionStateProvider
+namespace AspNet.Session.MongoSessionStateProvider
 {
     public interface ISessionStateDataStore : IDisposable
     {

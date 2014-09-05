@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 
-namespace MongoSessionStateProvider
+namespace AspNet.Session.MongoSessionStateProvider
 {
     public interface ISessionStateDataStoreFactory : IDisposable
     {

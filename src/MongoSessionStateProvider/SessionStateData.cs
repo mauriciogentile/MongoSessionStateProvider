@@ -1,11 +1,18 @@
 ﻿using System;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace MongoSessionStateProvider
+namespace AspNet.Session.MongoSessionStateProvider
 {
     public class SessionStateData
     {
+        public SessionStateData()
+        {
+            Created = DateTime.UtcNow;
+            LockDate = DateTime.UtcNow;
+        }
+
         [BsonId]
+        public string Id { get; set; }
         public string SessionId { get; set; }
         public DateTime Created { get; set; }
         public DateTime Expires { get; set; }

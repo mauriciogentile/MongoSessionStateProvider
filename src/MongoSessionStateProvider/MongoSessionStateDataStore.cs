@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace MongoSessionStateProvider
+namespace AspNet.Session.MongoSessionStateProvider
 {
     public class MongoSessionStateDataStore : MongoRepository, ISessionStateDataStore
     {
@@ -17,7 +17,7 @@ namespace MongoSessionStateProvider
 
         public SessionStateData Get(string id)
         {
-            return _collection.FindOneById(BsonValue.Create(new ObjectId(id)));
+            return _collection.FindOne(new QueryDocument("SessionId", id));
         }
 
         public void Save(SessionStateData data)
@@ -27,7 +27,7 @@ namespace MongoSessionStateProvider
 
         public void Delete(string id)
         {
-            _collection.Remove(new QueryDocument("_id", new ObjectId(id)));
+            _collection.Remove(new QueryDocument("SessionId", id));
         }
 
         #endregion

@@ -1,20 +1,31 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.IO;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Web;
 using System.Web.SessionState;
 
-namespace MongoSessionStateProvider
+namespace AspNet.Session.MongoSessionStateProvider
 {
     public class MongoSessionStateStoreProvider : SessionStateStoreProviderBase
     {
         readonly ISessionStateDataStoreFactory _storeFactory;
         private static readonly ConcurrentDictionary<string, Lock> Locks = new ConcurrentDictionary<string, Lock>();
 
-        protected MongoSessionStateStoreProvider()
+        public MongoSessionStateStoreProvider()
+            : this(new DefaultMongoSessionStateDataStoreFactory())
         {
-            _storeFactory = new DefaultMongoSessionStateDataStoreFactory();
+        }
+
+        public MongoSessionStateStoreProvider(ISessionStateDataStoreFactory sessionStateDataStoreFactory)
+        {
+            _storeFactory = sessionStateDataStoreFactory;
+        }
+
+        public override void Initialize(string name, System.Collections.Specialized.NameValueCollection config)
+        {
+            _storeFactory.Initialize(name, config);
         }
 
         public override SessionStateStoreData CreateNewStoreData(HttpContext context, int timeout)
@@ -32,7 +43,7 @@ namespace MongoSessionStateProvider
         public override void CreateUninitializedItem(HttpContext context, string id, int timeout)
         {
             SessionStateStoreData item = CreateNewStoreData(context, timeout);
-            byte[] buffer = Serialize(item);
+            byte[] buffer = Serialize((SessionStateItemCollection)item.Items);
 
             lock (GetLock(id))
             {
@@ -43,6 +54,7 @@ namespace MongoSessionStateProvider
                     {
                         data = new SessionStateData
                         {
+                            SessionId = id,
                             Timeout = timeout,
                             Expires = DateTime.Now.AddMinutes(timeout),
                             ItemSize = buffer.Length,
@@ -79,7 +91,7 @@ namespace MongoSessionStateProvider
                     lockAge = DateTime.Now - data.LockDate;
                     lockId = data.LockCookie;
                     actions = SessionStateActions.None;
-                    return Deserialize(data.Payload);
+                    return new SessionStateStoreData(Deserialize(data.Payload), SessionStateUtility.GetSessionStaticObjects(context), data.Timeout);
                 }
             }
 
@@ -116,7 +128,7 @@ namespace MongoSessionStateProvider
 
                         store.Save(data);
 
-                        return Deserialize(data.Payload);
+                        return new SessionStateStoreData(Deserialize(data.Payload), SessionStateUtility.GetSessionStaticObjects(context), data.Timeout);
                     }
                 }
 
@@ -181,7 +193,7 @@ namespace MongoSessionStateProvider
                 lock (GetLock(id))
                 {
                     int lockCookie = (int)lockId;
-                    byte[] buffer = Serialize(item);
+                    byte[] buffer = Serialize((SessionStateItemCollection)item.Items);
 
                     var data = new SessionStateData
                     {
@@ -231,26 +243,28 @@ namespace MongoSessionStateProvider
             Locks.TryRemove(id, out value);
         }
 
-        static byte[] Serialize(SessionStateStoreData obj)
+        static byte[] Serialize(SessionStateItemCollection obj)
         {
             if (obj == null)
                 return null;
 
             using (var ms = new MemoryStream())
+            using (var writer = new BinaryWriter(ms))
             {
-                new BinaryFormatter().Serialize(ms, obj);
+                obj.Serialize(writer);
                 return ms.ToArray();
             }
         }
 
-        static SessionStateStoreData Deserialize(byte[] buffer)
+        static SessionStateItemCollection Deserialize(byte[] buffer)
         {
             if (buffer == null)
                 return null;
 
             using (var ms = new MemoryStream(buffer))
+            using (var reader = new BinaryReader(ms))
             {
-                return (SessionStateStoreData)new BinaryFormatter().Deserialize(ms);
+                return SessionStateItemCollection.Deserialize(reader);
             }
         }
     }

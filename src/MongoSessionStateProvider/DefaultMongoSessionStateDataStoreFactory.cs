@@ -1,7 +1,7 @@
 ﻿using System.Collections.Specialized;
 using System.Configuration;
 
-namespace MongoSessionStateProvider
+namespace AspNet.Session.MongoSessionStateProvider
 {
     public sealed class DefaultMongoSessionStateDataStoreFactory : ISessionStateDataStoreFactory
     {
@@ -10,13 +10,13 @@ namespace MongoSessionStateProvider
 
         public void Initialize(string name, NameValueCollection config)
         {
-            string connectionString = config["connectionString"];
-            if (string.IsNullOrEmpty(connectionString))
+            string connectionStringName = config["connectionStringName"];
+            if (string.IsNullOrEmpty(connectionStringName))
             {
                 throw new ConfigurationErrorsException();
             }
 
-            _repository = new MongoSessionStateDataStore(connectionString);
+            _repository = new MongoSessionStateDataStore(ConfigurationManager.ConnectionStrings[connectionStringName].ConnectionString);
         }
 
         public ISessionStateDataStore Get()

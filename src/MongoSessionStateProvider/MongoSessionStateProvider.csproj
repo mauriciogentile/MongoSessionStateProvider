@@ -7,8 +7,8 @@
     <ProjectGuid>{DF493748-4324-42F6-A8BC-0C1869D4A787}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MongoSessionStateProvider</RootNamespace>
-    <AssemblyName>MongoSessionStateProvider</AssemblyName>
+    <RootNamespace>AspNet.Session.MongoSessionStateProvider</RootNamespace>
+    <AssemblyName>AspNet.Session.MongoSessionStateProvider</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -39,6 +39,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -47,7 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataSession.cs" />
+    <Compile Include="SessionStateData.cs" />
     <Compile Include="DefaultMongoSessionStateDataStoreFactory.cs" />
     <Compile Include="IdentityGenerator.cs" />
     <Compile Include="IdentitySerializer.cs" />
